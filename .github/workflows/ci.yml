@@ -8,14 +8,22 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-      - uses: hynek/setup-uv@v1
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
       - run: uv sync --dev
+
       - run: |
           uv run pulser kb overview > demo_output.txt
           cat demo_output.txt
+
       - uses: actions/upload-artifact@v4
-        with: 
+        with:
           name: demo-output
           path: demo_output.txt
+
