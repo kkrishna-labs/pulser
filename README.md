@@ -42,20 +42,29 @@ User Query
 
 ## Installation
 
+Requires Python 3.10+.
+
 ```bash
 # Clone or navigate to the project
 cd pulser
 
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # Linux/Mac
-# .venv\Scripts\activate   # Windows
+# Sync dependencies (creates .venv, installs everything)
+python -m uv sync
 
-# Install in development mode
-pip install -e ".[dev]"
+# For development (adds pytest, ruff, uv itself)
+python -m uv sync --dev
 
 # Install Playwright browsers (for advanced scraping)
-playwright install
+.venv/Scripts/python -m playwright install  # Windows
+# .venv/bin/python -m playwright install    # Linux/Mac
+```
+
+To add/remove dependencies:
+
+```bash
+python -m uv add <package>            # add runtime dep
+python -m uv add --dev <package>      # add dev dep
+python -m uv remove <package>         # remove dep
 ```
 
 ## Configuration
