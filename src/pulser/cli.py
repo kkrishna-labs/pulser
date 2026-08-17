@@ -181,6 +181,30 @@ def cmd_stats(args: argparse.Namespace) -> None:
     print()
 
 
+def cmd_kb(args: argparse.Namespace) -> None:
+    """Knowledge base introspection."""
+    from pulser.kb import kb_overview, kb_topics, kb_sources, kb_search, kb_queries
+
+    sub = args.kb_command
+
+    if sub is None or sub == "overview":
+        print(kb_overview())
+    elif sub == "topics":
+        print(kb_topics())
+    elif sub == "sources":
+        print(kb_sources())
+    elif sub == "search":
+        if not args.search_query:
+            log.error("Usage: pulser kb search \"<query>\"")
+            sys.exit(1)
+        print(kb_search(args.search_query, top_k=args.top_k))
+    elif sub == "queries":
+        print(kb_queries())
+    else:
+        log.error("Unknown kb command: %s", sub)
+        sys.exit(1)
+
+
 def cmd_dashboard(args: argparse.Namespace) -> None:
     """Launch the Streamlit dashboard."""
     import subprocess
@@ -213,6 +237,17 @@ def main():
 
     # stats
     subparsers.add_parser("stats", help="Show pipeline statistics")
+
+    # kb
+    kb_parser = subparsers.add_parser("kb", help="Knowledge base introspection")
+    kb_subparsers = kb_parser.add_subparsers(dest="kb_command", help="KB commands")
+    kb_subparsers.add_parser("overview", help="Full knowledge base overview")
+    kb_subparsers.add_parser("topics", help="List all topics")
+    kb_subparsers.add_parser("sources", help="List all sources")
+    kb_subparsers.add_parser("queries", help="List all collected queries")
+    kb_search_parser = kb_subparsers.add_parser("search", help="Search enriched documents")
+    kb_search_parser.add_argument("search_query", help="Search query")
+    kb_search_parser.add_argument("--top-k", type=int, default=5, help="Number of results")
 
     # dashboard
     subparsers.add_parser("dashboard", help="Launch Streamlit dashboard")
