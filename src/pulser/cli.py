@@ -18,8 +18,9 @@ import time
 from pathlib import Path
 
 from pulser.config import RAW_DIR, PROCESSED_DIR, OUTPUT_DIR
-from pulser.utils.logging import get_logger
+from pulser.utils.logging import get_logger, setup_logging
 
+setup_logging()
 log = get_logger("pulser")
 
 

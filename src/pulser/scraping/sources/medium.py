@@ -1,4 +1,8 @@
-"""Medium RSS + httpx collector."""
+"""Medium collector.
+
+Uses Google News RSS with site:medium.com as primary strategy,
+since Medium's tag RSS only works for known tags, not arbitrary queries.
+"""
 
 from __future__ import annotations
 
@@ -17,22 +21,17 @@ log = get_logger(__name__)
 class MediumCollector(BaseCollector):
     name = "medium"
     category = SourceCategory.BLOG
-    base_url = "https://medium.com"
 
     async def collect(self, terms: list[str], max_results: int = 20) -> list[RawDocument]:
         docs = []
         per_term = max(3, max_results // len(terms)) if terms else 0
 
         for term in terms:
-            # Medium's tag-based RSS
-            tag = term.lower().replace(" ", "-").replace(".", "")
-            url = f"https://medium.com/feed/tag/{tag}"
-            text = await self.fetch(url)
-            if not text:
-                # Try search via Google News RSS for Medium specifically
-                url = f"https://news.google.com/rss/search?q={quote_plus(term + ' site:medium.com')}&hl=en-US"
-                text = await self.fetch(url)
-
+            rss_url = (
+                f"https://news.google.com/rss/search?"
+                f"q={quote_plus(term + ' site:medium.com')}&hl=en-US&gl=US&ceid=US:en"
+            )
+            text = await self.fetch(rss_url)
             if not text:
                 continue
 
@@ -41,8 +40,6 @@ class MediumCollector(BaseCollector):
                 content = ""
                 if hasattr(entry, "summary"):
                     content = normalize_text(entry.summary)
-                elif hasattr(entry, "content"):
-                    content = normalize_text(entry.content[0].get("value", ""))
 
                 docs.append(
                     RawDocument(
@@ -53,7 +50,7 @@ class MediumCollector(BaseCollector):
                         source="medium",
                         category=self.category,
                         timestamp=entry.get("published", ""),
-                        metadata={"feed_term": term, "tag": tag},
+                        metadata={"feed_term": term},
                     )
                 )
 

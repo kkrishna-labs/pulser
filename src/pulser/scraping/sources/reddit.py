@@ -1,8 +1,14 @@
-"""Reddit JSON API collector."""
+"""Reddit collector.
+
+Uses Google News RSS with site:reddit.com as primary strategy,
+since Reddit's JSON API now requires OAuth.
+"""
 
 from __future__ import annotations
 
 from urllib.parse import quote_plus
+
+import feedparser
 
 from pulser.scraping.base import BaseCollector
 from pulser.schema import RawDocument, SourceCategory
@@ -22,33 +28,31 @@ class RedditCollector(BaseCollector):
         per_term = max(3, max_results // len(terms)) if terms else 0
 
         for term in terms:
-            url = f"{self.base_url}/search.json?q={quote_plus(term)}&sort=relevance&limit={per_term}&t=month"
-            data = await self.fetch_json(url)
-            if not data or not isinstance(data, dict):
+            # Strategy: Google News RSS filtered to reddit.com
+            rss_url = (
+                f"https://news.google.com/rss/search?"
+                f"q={quote_plus(term + ' site:reddit.com')}&hl=en-US&gl=US&ceid=US:en"
+            )
+            text = await self.fetch(rss_url)
+            if not text:
                 continue
 
-            children = data.get("data", {}).get("children", [])
-            for child in children[:per_term]:
-                post = child.get("data", {})
-                title = normalize_text(post.get("title", ""))
-                selftext = normalize_text(post.get("selftext", ""))
-                content = selftext if selftext else title
+            feed = feedparser.parse(text)
+            for entry in feed.entries[:per_term]:
+                content = ""
+                if hasattr(entry, "summary"):
+                    content = normalize_text(entry.summary)
 
                 docs.append(
                     RawDocument(
-                        url=f"https://reddit.com{post.get('permalink', '')}",
-                        title=title,
+                        url=entry.get("link", ""),
+                        title=normalize_text(entry.get("title", "")),
                         content=content,
-                        author=post.get("author", ""),
+                        author=entry.get("author", ""),
                         source="reddit",
                         category=self.category,
-                        timestamp=str(post.get("created_utc", "")),
-                        metadata={
-                            "subreddit": post.get("subreddit", ""),
-                            "score": post.get("score", 0),
-                            "num_comments": post.get("num_comments", 0),
-                            "feed_term": term,
-                        },
+                        timestamp=entry.get("published", ""),
+                        metadata={"feed_term": term, "strategy": "google_news_rss"},
                     )
                 )
 

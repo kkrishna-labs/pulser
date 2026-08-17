@@ -76,48 +76,51 @@ cp .env.example .env
 ```
 
 Key settings:
+
 - `LLM_API_KEY` - Optional. Enables AI-powered search term expansion and RAG answers. Supports OpenAI-compatible APIs (NVIDIA NIM, OpenAI, Ollama, etc.)
 - `MAX_CONCURRENT_REQUESTS` - Scraping concurrency (default: 10)
 - `EMBEDDING_MODEL` - Sentence transformer model (default: all-MiniLM-L6-v2)
 
 ## Usage
 
+All commands go through `python -m uv run`:
+
 ### Full Pipeline
 
 ```bash
 # Collect, preprocess, enrich, and build vector store for a topic
-pulser collect "quantum computing"
+python -m uv run pulser collect "quantum computing"
 ```
 
 ### Query
 
 ```bash
 # RAG-powered question answering
-pulser query "what are the latest breakthroughs?"
+python -m uv run pulser query "what are the latest breakthroughs?"
 
 # Search-only (no LLM)
-pulser query "trends in AI" --no-llm
+python -m uv run pulser query "trends in AI" --no-llm
 ```
 
 ### Build
 
 ```bash
 # Rebuild vector store from existing enriched data
-pulser build
+python -m uv run pulser build
 ```
 
 ### Dashboard
 
 ```bash
 # Launch Streamlit dashboard
-pulser dashboard
+python -m uv run pulser dashboard
 ```
 
 ### Stats
 
 ```bash
 # View pipeline statistics
-pulser stats
+python -m uv run pulser stats
 ```
 
 ## Project Structure
@@ -162,14 +165,14 @@ pulser/
 
 Each pipeline stage produces a typed output that feeds the next:
 
-| Stage | Input | Output |
-|-------|-------|--------|
-| Search Terms | User query | `SearchTerms` (terms + source) |
-| Collection | Search terms | `list[RawDocument]` |
-| Preprocessing | Raw docs | `(list[ProcessedDocument], list[rejection])` |
-| NLP Enrichment | Processed docs | `list[EnrichedDocument]` |
-| Vector Store | Enriched docs | ChromaDB chunks |
-| Query | Question | `QueryResult` (answer + sources) |
+| Stage          | Input          | Output                                         |
+| -------------- | -------------- | ---------------------------------------------- |
+| Search Terms   | User query     | `SearchTerms` (terms + source)               |
+| Collection     | Search terms   | `list[RawDocument]`                          |
+| Preprocessing  | Raw docs       | `(list[ProcessedDocument], list[rejection])` |
+| NLP Enrichment | Processed docs | `list[EnrichedDocument]`                     |
+| Vector Store   | Enriched docs  | ChromaDB chunks                                |
+| Query          | Question       | `QueryResult` (answer + sources)             |
 
 ## Design Principles
 
