@@ -264,6 +264,7 @@ def main():
         "build": cmd_build,
         "stats": cmd_stats,
         "dashboard": cmd_dashboard,
+        "kb": cmd_kb,
     }
 
     commands[args.command](args)
