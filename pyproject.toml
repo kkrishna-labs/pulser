@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pulser"
+version = "0.1.0"
+description = "Search-driven web intelligence: scrape, analyze, understand."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Krishna Kanojiya" },
+]
+keywords = ["nlp", "web-scraping", "rag", "sentiment-analysis", "text-mining"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3",
+]
+
+dependencies = [
+    "aiohttp>=3.9",
+    "httpx>=0.27",
+    "beautifulsoup4>=4.12",
+    "lxml>=5.1",
+    "feedparser>=6.0",
+    "python-dotenv>=1.0",
+    "playwright>=1.40",
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "transformers>=4.30",
+    "torch>=2.0",
+    "sentence-transformers>=2.2",
+    "chromadb>=0.4",
+    "tqdm>=4.65",
+    "plotly>=5.14",
+    "streamlit>=1.24",
+    "openai>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.1",
+]
+
+[project.scripts]
+pulser = "pulser.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pulser"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
